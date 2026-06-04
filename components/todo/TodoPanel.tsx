@@ -23,11 +23,10 @@ import { cn } from '@/lib/utils';
 export default function TodoPanel() {
   const { selectedDate, todos, fetchTodos } = useTodoStore();
 
-  // 컴포넌트 마운트 시 오늘 날짜의 투두 초기 조회
+  // 선택된 날짜가 변경되면 해당 날짜의 투두 조회
   useEffect(() => {
     fetchTodos(selectedDate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedDate, fetchTodos]);
 
   const isSelectedToday = isToday(selectedDate);
 

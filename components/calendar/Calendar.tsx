@@ -33,11 +33,10 @@ export default function Calendar() {
 
   const { setSelectedDate: setTodoDate } = useTodoStore();
 
-  // 컴포넌트 마운트 시 현재 월의 메타 데이터 조회
+  // 월이 변경되면 해당 월의 메타 데이터 조회
   useEffect(() => {
     fetchDayMetas(currentYear, currentMonth);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentYear, currentMonth, fetchDayMetas]);
 
   /**
    * 날짜 클릭 핸들러
