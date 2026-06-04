@@ -11,16 +11,21 @@ CREATE TABLE IF NOT EXISTS todos (
   is_done     BOOLEAN NOT NULL DEFAULT FALSE,
   date        DATE NOT NULL,                    -- 투두가 속한 날짜 (YYYY-MM-DD)
   order_index INTEGER NOT NULL DEFAULT 0,       -- 순서 관리용
+  user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,  -- 투두 소유자
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ── 날짜 기반 조회 최적화 인덱스 ──────────────────────────
+-- ── 조회 최적화 인덱스 ────────────────────────────────────
 
--- 날짜별 투두 조회 (가장 빈번한 쿼리)
+-- 사용자 + 날짜별 투두 조회 (가장 빈번한 쿼리, RLS 필터링 최적화)
+CREATE INDEX IF NOT EXISTS idx_todos_user_date ON todos(user_id, date);
+
+-- 사용자 + 날짜 + 순서 조회 (목록 정렬)
+CREATE INDEX IF NOT EXISTS idx_todos_user_date_order ON todos(user_id, date, order_index);
+
+-- 기존 인덱스 (여전히 유효하지만 복합 인덱스가 더 효율적)
 CREATE INDEX IF NOT EXISTS idx_todos_date ON todos(date);
-
--- 날짜 + 순서 조회 (목록 정렬)
 CREATE INDEX IF NOT EXISTS idx_todos_date_order ON todos(date, order_index);
 
 -- ── updated_at 자동 갱신 트리거 ───────────────────────────
@@ -41,29 +46,29 @@ CREATE OR REPLACE TRIGGER update_todos_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- ── Row Level Security (RLS) 설정 ─────────────────────────
--- MVP 단계: 인증 없이 전체 공개 (Phase 3에서 사용자 인증 후 수정 예정)
+-- 사용자 인증 기반 격리: 각 사용자는 자신의 투두만 접근 가능
 
 ALTER TABLE todos ENABLE ROW LEVEL SECURITY;
 
--- 모든 사용자가 todos를 읽을 수 있음 (MVP: 익명 접근 허용)
-CREATE POLICY "todos_select_all"
+-- 본인 투두만 조회 가능
+CREATE POLICY "todos_select_own"
   ON todos FOR SELECT
-  USING (true);
+  USING (auth.uid() = user_id);
 
--- 모든 사용자가 todos를 추가할 수 있음 (MVP: 익명 접근 허용)
-CREATE POLICY "todos_insert_all"
+-- 본인 투두만 생성 가능
+CREATE POLICY "todos_insert_own"
   ON todos FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.uid() = user_id);
 
--- 모든 사용자가 todos를 수정할 수 있음 (MVP: 익명 접근 허용)
-CREATE POLICY "todos_update_all"
+-- 본인 투두만 수정 가능
+CREATE POLICY "todos_update_own"
   ON todos FOR UPDATE
-  USING (true);
+  USING (auth.uid() = user_id);
 
--- 모든 사용자가 todos를 삭제할 수 있음 (MVP: 익명 접근 허용)
-CREATE POLICY "todos_delete_all"
+-- 본인 투두만 삭제 가능
+CREATE POLICY "todos_delete_own"
   ON todos FOR DELETE
-  USING (true);
+  USING (auth.uid() = user_id);
 
 -- ── 샘플 데이터 (선택적, 개발 테스트용) ──────────────────
 

@@ -7,6 +7,8 @@
  */
 
 import React from 'react';
+import { LogOut } from 'lucide-react';
+import { signOut } from '@/app/actions/auth';
 
 interface AppLayoutProps {
   /** 좌측 패널 (캘린더 영역) */
@@ -33,10 +35,21 @@ export default function AppLayout({ left, right }: AppLayoutProps) {
               DayTask
             </h1>
           </div>
-          {/* 부제목 (데스크탑에서만 표시) */}
+          {/* 중앙: 부제목 (데스크탑에서만 표시) */}
           <p className="hidden md:block text-sm text-gray-500">
             날짜별 할 일 관리
           </p>
+          {/* 우측: 로그아웃 버튼 */}
+          <form action={signOut} className="flex items-center">
+            <button
+              type="submit"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+              title="로그아웃"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">로그아웃</span>
+            </button>
+          </form>
         </div>
       </header>
 

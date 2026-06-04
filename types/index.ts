@@ -14,6 +14,7 @@ export interface Todo {
   is_done: boolean;
   date: string;          // ISO 형식: "YYYY-MM-DD"
   order_index: number;
+  user_id: string;       // 투두 소유자의 Supabase User ID
   created_at: string;
   updated_at: string;
 }
@@ -120,7 +121,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Omit<Todo, 'id'>>;
+        Update: Partial<Omit<Todo, 'id' | 'user_id'>>;
       };
     };
   };

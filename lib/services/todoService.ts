@@ -72,6 +72,13 @@ export async function fetchTodosByDate(date: string): Promise<Todo[]> {
 export async function createTodo(input: CreateTodoInput): Promise<Todo> {
   const supabase = getSupabase();
 
+  // 현재 로그인한 사용자 정보 조회
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error('로그인 정보를 가져올 수 없습니다. 다시 로그인해주세요.');
+  }
+
   // 해당 날짜의 최대 order_index 조회
   const { data: existingRows } = await supabase
     .from('todos')
@@ -93,6 +100,7 @@ export async function createTodo(input: CreateTodoInput): Promise<Todo> {
       date: input.date,
       order_index: nextOrderIndex,
       is_done: false,
+      user_id: user.id,
     })
     .select()
     .single();
