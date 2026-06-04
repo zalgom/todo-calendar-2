@@ -13,6 +13,7 @@ import { Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTodoStore } from '@/store/todoStore';
+import { useCalendarStore } from '@/store/calendarStore';
 import { toast } from 'sonner';
 
 // ────────────────────────────────────────────────────────────
@@ -42,6 +43,7 @@ type TodoInputForm = z.infer<typeof todoInputSchema>;
  */
 export default function TodoInput() {
   const { addTodo, selectedDate, isLoading } = useTodoStore();
+  const { fetchDayMetas, currentYear, currentMonth } = useCalendarStore();
 
   const {
     register,
@@ -55,7 +57,7 @@ export default function TodoInput() {
 
   /**
    * 폼 제출 핸들러
-   * 낙관적 업데이트로 즉시 목록에 반영 후 저장
+   * 투두 추가 후 캘린더 메타 데이터 갱신
    */
   const onSubmit = async (data: TodoInputForm) => {
     try {
@@ -64,6 +66,8 @@ export default function TodoInput() {
         date: selectedDate,
       });
       reset();
+      // 투도 추가 후 캘린더 메타 데이터 갱신
+      fetchDayMetas(currentYear, currentMonth);
       // 성공 토스트는 조용하게 (사용자 경험 방해 최소화)
     } catch {
       toast.error('저장에 실패했습니다. 다시 시도해주세요.');

@@ -119,9 +119,8 @@ export default function TodoList() {
 
   // ── 핸들러 함수들 ──
 
-  const handleToggle = (id: string) => {
-    toggleTodo(id);
-    // 완료 상태 변경 후 캘린더 메타 데이터 갱신
+  const handleToggle = async (id: string) => {
+    await toggleTodo(id);
     fetchDayMetas(currentYear, currentMonth);
   };
 
